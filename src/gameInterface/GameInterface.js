@@ -1,10 +1,38 @@
-const bars = require('../Bars');
-const assets = require('../Assets');
+const bars = require('./interfaceObjects/Bars');
+const assets = require('./interfaceObjects/Assets');
+const texts = require('./interfaceObjects/Texts');
 
 module.exports = function(loader = null, add = null, emitter = null) {
+  let expBar = 0;
+
   let interfaceObjects = {
-    bars: {}
+    bars: {},
+    texts: {}
   };
+
+  const createTexts = (player) => {
+    texts.forEach(text => {
+      interfaceObjects.texts[text.name] = add.text();
+    });
+
+    texts.forEach(text => {
+      interfaceObjects.texts[text.name].setFont(text.fontName);
+      interfaceObjects.texts[text.name].setFontSize(text.fontSize);
+
+      if (text.fn) {
+        interfaceObjects.texts[text.name].setText(player[text.fn]());
+      }
+
+      if (text.position) {
+        let { x, y } = text.position;
+        interfaceObjects.texts[text.name].setPosition(x, y);
+      }
+
+      if (text.color) {
+        interfaceObjects.texts[text.name].setTint(text.color);
+      }
+    });
+  }
 
   const createBars = () => {
     bars.forEach(bar => {
@@ -17,8 +45,6 @@ module.exports = function(loader = null, add = null, emitter = null) {
       interfaceObjects.bars[bar.name].fillStyle(bar.color, bar.alpha);
       interfaceObjects.bars[bar.name].fillRoundedRect(x, y, width, height, radius);
     });
-
-    console.log(interfaceObjects.bars);
   }
 
   const loadAssets = () => {
@@ -66,11 +92,21 @@ module.exports = function(loader = null, add = null, emitter = null) {
   const bindEvents = () => {
     interfaceObjects['attackButton'].on('pointerdown', function (pointer) {
       this.setTint(0xff0000);
-      emitter.emitEvent('attack');
+      emitter.emit('attack', null);
     });
 
     interfaceObjects['attackButton'].on('pointerup', function (pointer) {
       this.clearTint();
+    });
+
+    emitter.addListener('displayDamage', function([damage]) {
+      interfaceObjects.texts.damageText.setPosition((Math.random()*280)+25, (Math.random()*194)+158);
+      interfaceObjects.texts.damageText.setText(Math.floor(damage));
+    });
+
+    emitter.addListener('printLevel', function([player]) {
+      interfaceObjects.texts.levelText.setText(player.getLevel())
+      interfaceObjects.texts.skillPointsText.setText(player.getSkillPoints())
     });
 
     emitter.addListener('updateHealthBar', function([enemyHp]) {
@@ -85,10 +121,20 @@ module.exports = function(loader = null, add = null, emitter = null) {
       interfaceObjects.bars.enemyHealth.fillRoundedRect(28, 132, 318, 28, 3)
     });
 
-    emitter.addListener('updateExpBar', function([playerExp]) {
+    emitter.addListener('updateExpBar', function([exp]) {
+      expBar += exp;
+
       interfaceObjects.bars.expBar.clear()
       interfaceObjects.bars.expBar.fillStyle(0xffff00, 1)
-      interfaceObjects.bars.expBar.fillRoundedRect(139, 49, (playerExp), 28, 3)
+      interfaceObjects.bars.expBar.fillRoundedRect(139, 49, expBar, 28, 3)
+    });
+
+    emitter.addListener('clearBar', function() {
+      expBar = 0
+
+      interfaceObjects.bars.expBar.clear()
+      interfaceObjects.bars.expBar.fillStyle(0xffff00, 1)
+      interfaceObjects.bars.expBar.fillRoundedRect(139, 49, 0, 28, 3)
     });
   }
 
@@ -96,6 +142,7 @@ module.exports = function(loader = null, add = null, emitter = null) {
     loadAssets,
     loadSprites,
     createBars,
+    createTexts,
     addAssets,
     bindEvents
   }

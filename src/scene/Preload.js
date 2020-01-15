@@ -1,23 +1,24 @@
 const EventEmitter = require('wolfy87-eventemitter');
 
 const EnemyList = require('../EnemyList');
-const Player = require('../player/Player');
-const Enemy = require('../player/Enemy');
 
-const FightHandler= require('../FightHandler');
+const Enemy = require('../entities/Enemy');
+const Player = require('../entities/Player');
+
+const FightHandler= require('../handlers/FightHandler');
 const GameInterface = require('../gameInterface/GameInterface');
 
-let enemies = EnemyList.map(data => Enemy(data));
+const enemies = EnemyList.map(data => Enemy(data));
 
 module.exports = function() {
-  let emitter = new EventEmitter();
-  let player = Player();
+  this.emitter = new EventEmitter();
+  let player = Player(this.time, this.emitter);
 
-  this['gameInterface'] = GameInterface(this.load, this.add, emitter);
-  this['fightHandler'] = FightHandler(player, enemies, emitter);
+  this.gameInterface = GameInterface(this.load, this.add, this.emitter);
+  this.fightHandler = FightHandler(player, enemies, this.emitter);
 
-  this['player'] = player;
-  this['enemies'] = enemies;
+  this.player = player;
+  this.enemies = enemies;
 
   this.gameInterface.loadAssets();
   this.gameInterface.loadSprites();
