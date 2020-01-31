@@ -144,7 +144,7 @@ module.exports = function(loader = null, add = null, emitter = null) {
     emitter.addListener('bossCheck', function(isBoss) {
       if(isBoss!='FALSE'){
         activateBossTimer=true;
-      }
+      }else activateBossTimer=false;
     })
 
     emitter.addListener('updateTimerBar', function(){
@@ -160,10 +160,12 @@ module.exports = function(loader = null, add = null, emitter = null) {
         interfaceObjects.bars.timerBar.clear();
         interfaceObjects.bars.timerBar.fillStyle(0xff00ff, 1);
         interfaceObjects.bars.timerBar.fillRoundedRect(28, 147, timer, 28, 3);
-      }else{
+      }else if(activateBossTimer==false){
+        timer =0;
+
         interfaceObjects.bars.timerBar.clear();
         interfaceObjects.bars.timerBar.fillStyle(0xff00ff, 1);
-        interfaceObjects.bars.timerBar.fillRoundedRect(28, 147, 0, 28, 3);
+        interfaceObjects.bars.timerBar.fillRoundedRect(28, 147, timer, 28, 3);
       }
     });
 

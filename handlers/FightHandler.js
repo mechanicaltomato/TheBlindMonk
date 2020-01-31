@@ -4,6 +4,7 @@ module.exports = (player, enemies, emitter) => {
 
   let callNextEnemy = () => {
     currentEnemy++;
+    emitter.emit('bossCheck', [enemies[currentEnemy].isBoss()]);
   }
 
   const bindEvents = () => {
